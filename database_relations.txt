@@ -1,0 +1,14 @@
+[departments]                [aisles]
+ department_id ───┐         aisle_id ─┐
+                  │                  │
+                  ▼                  ▼
+               [products] (product_id)
+                    │
+      ┌─────────────┴─────────────┐
+      ▼                           ▼
+[order_products__prior]   [order_products__train]
+       (order_id, product_id)
+                    │
+                    ▼
+                [orders]
+                (order_id, user_id)
