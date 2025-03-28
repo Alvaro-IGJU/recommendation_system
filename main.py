@@ -1,5 +1,11 @@
-from recommend_function import recomendar_productos_por_usuario
+import pandas as pd
+from recomendar_usuario_clusterizado import recomendar_usuario_completo
 
-# Recomendaciones para un usuario
-print(recomendar_productos_por_usuario(user_id=10341, n=10))
-print(recomendar_productos_por_usuario(user_id=150518, n=10))
+# 📥 Cargar datos
+interacciones = pd.read_csv("interacciones_usuario_isla.csv")
+usuarios_clusters = pd.read_csv("usuarios_clusters.csv")
+
+# 👤 Usuario a probar
+usuario_objetivo = 5  # ⬅️ Sustituye por un ID válido
+print(recomendar_usuario_completo(29, n=10))
+print(recomendar_usuario_completo(42, n=10))

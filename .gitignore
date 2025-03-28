@@ -3,4 +3,5 @@
 /venv
 /myenv
 modelo_svd.pkl
-modelos_subclusters/
+/modelos_subclusters
+/__pycache__
