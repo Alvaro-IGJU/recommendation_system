@@ -2,6 +2,6 @@
 *.db
 /venv
 /myenv
-modelo_svd.pkl
-/modelos_subclusters
+*.pkl
 /__pycache__
+/modelos_subclusters
