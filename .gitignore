@@ -3,3 +3,4 @@
 /venv
 /myenv
 modelo_svd.pkl
+modelos_subclusters/
