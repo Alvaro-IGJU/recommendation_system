@@ -1,0 +1,83 @@
+📊 Métricas de modelos SVD por subcluster
+==================================================
+
+Modelo cluster 0 - subcluster 0
+ - N interacciones: 491646
+ - RMSE      : 0.4167
+ - MAE       : 0.3521
+ - Precision : 0.7254
+ - Recall    : 0.7066
+ - F1-score  : 0.7159
+----------------------------------------
+Modelo cluster 0 - subcluster 1
+ - N interacciones: 839510
+ - RMSE      : 0.3964
+ - MAE       : 0.3149
+ - Precision : 0.6247
+ - Recall    : 0.3316
+ - F1-score  : 0.4332
+----------------------------------------
+Modelo cluster 0 - subcluster 2
+ - N interacciones: 963594
+ - RMSE      : 0.4069
+ - MAE       : 0.3326
+ - Precision : 0.6613
+ - Recall    : 0.5384
+ - F1-score  : 0.5936
+----------------------------------------
+Modelo cluster 1 - subcluster 0
+ - N interacciones: 6378534
+ - RMSE      : 0.3740
+ - MAE       : 0.2834
+ - Precision : 0.6569
+ - Recall    : 0.5605
+ - F1-score  : 0.6049
+----------------------------------------
+Modelo cluster 2 - subcluster 0
+ - N interacciones: 4876528
+ - RMSE      : 0.2264
+ - MAE       : 0.1050
+ - Precision : 0.5856
+ - Recall    : 0.0718
+ - F1-score  : 0.1280
+----------------------------------------
+Modelo cluster 2 - subcluster 1
+ - N interacciones: 2054354
+ - RMSE      : 0.3065
+ - MAE       : 0.1881
+ - Precision : 0.5341
+ - Recall    : 0.0888
+ - F1-score  : 0.1523
+----------------------------------------
+Modelo cluster 3 - subcluster 0
+ - N interacciones: 712210
+ - RMSE      : 0.3916
+ - MAE       : 0.3114
+ - Precision : 0.7827
+ - Recall    : 0.7921
+ - F1-score  : 0.7874
+----------------------------------------
+Modelo cluster 3 - subcluster 1
+ - N interacciones: 1727394
+ - RMSE      : 0.3900
+ - MAE       : 0.3113
+ - Precision : 0.7494
+ - Recall    : 0.6814
+ - F1-score  : 0.7138
+----------------------------------------
+Modelo cluster 4 - subcluster 0
+ - N interacciones: 6177668
+ - RMSE      : 0.3046
+ - MAE       : 0.1887
+ - Precision : 0.7744
+ - Recall    : 0.2205
+ - F1-score  : 0.3433
+----------------------------------------
+Modelo cluster 4 - subcluster 1
+ - N interacciones: 3410568
+ - RMSE      : 0.3457
+ - MAE       : 0.2392
+ - Precision : 0.6683
+ - Recall    : 0.2336
+ - F1-score  : 0.3462
+----------------------------------------
