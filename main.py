@@ -2,8 +2,8 @@ import pandas as pd
 from recomendar_usuario_clusterizado import recomendar_usuario_completo
 
 # 📥 Cargar datos
-interacciones = pd.read_csv("interacciones_usuario_isla.csv")
-usuarios_clusters = pd.read_csv("usuarios_clusters.csv")
+interacciones = pd.read_csv("data/interacciones_usuario_isla.csv")
+usuarios_clusters = pd.read_csv("data/usuarios_clusters.csv")
 
 # 👤 Usuario a probar
 usuario_objetivo = 5  # ⬅️ Sustituye por un ID válido

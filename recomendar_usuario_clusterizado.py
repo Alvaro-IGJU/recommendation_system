@@ -3,11 +3,11 @@ import os
 from surprise import dump
 
 # 📂 Cargar datos necesarios
-interacciones = pd.read_csv("interacciones_usuario_isla.csv")
-clusters = pd.read_csv("usuarios_clusters.csv")
-orders = pd.read_csv("orders.csv")
-products = pd.read_csv("products.csv")
-order_products_prior = pd.read_csv("order_products__prior.csv")
+interacciones = pd.read_csv("data/interacciones_usuario_isla.csv")
+clusters = pd.read_csv("data/usuarios_clusters.csv")
+orders = pd.read_csv("data/orders.csv")
+products = pd.read_csv("data/products.csv")
+order_products_prior = pd.read_csv("data/order_products__prior.csv")
 
 # 🔗 Añadir nombres de productos
 order_products = order_products_prior.merge(products[['product_id', 'product_name']], on='product_id')

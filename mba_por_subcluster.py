@@ -3,11 +3,11 @@ import os
 from mlxtend.frequent_patterns import apriori, association_rules
 
 # 📂 Cargar datos
-orders = pd.read_csv("orders.csv")
-products = pd.read_csv("products.csv")
-clusters = pd.read_csv("usuarios_clusters.csv")
-interacciones = pd.read_csv("interacciones_usuario_isla.csv")
-order_products_prior = pd.read_csv("order_products__prior.csv")  # asegúrate de tenerlo
+orders = pd.read_csv("data/orders.csv")
+products = pd.read_csv("data/products.csv")
+clusters = pd.read_csv("data/usuarios_clusters.csv")
+interacciones = pd.read_csv("data/interacciones_usuario_isla.csv")
+order_products_prior = pd.read_csv("data/order_products__prior.csv")  # asegúrate de tenerlo
 
 # 🔗 Merge con productos para añadir nombre
 order_products = order_products_prior.merge(products[['product_id', 'product_name']], on='product_id')
