@@ -28,7 +28,7 @@ for (cluster_id, subcluster_id), grupo in clusters.groupby(['cluster', 'subclust
     datos_sub = datos[datos['user_id'].isin(user_ids)]
 
     # 🔽 Filtrar productos más frecuentes
-    top_n = 1000000
+    top_n = 2000000
     productos_frecuentes = datos_sub['product_name'].value_counts().nlargest(top_n).index
     datos_filtrados = datos_sub[datos_sub['product_name'].isin(productos_frecuentes)]
 
