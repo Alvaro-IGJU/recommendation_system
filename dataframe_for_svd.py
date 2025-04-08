@@ -46,3 +46,19 @@ conn.commit()
 conn.close()
 
 print("✅ Tabla 'interacciones_usuario_isla' creada e insertada en 'instacart.db'.")
+
+# 🔍 Revisión rápida de la tabla interacciones
+
+print("\n📊 Distribución de la variable 'comprado':")
+print(interacciones['comprado'].value_counts())
+
+print("\n🔢 Número de usuarios únicos:", interacciones['user_id'].nunique())
+print("🔢 Número de islas únicas:", interacciones['aisle_id'].nunique())
+
+print("\n📦 Media de islas visitadas por usuario (positivas):")
+islas_por_usuario = interacciones[interacciones['comprado'] == 1].groupby('user_id')['aisle_id'].nunique()
+print(islas_por_usuario.describe())
+
+print("\n📦 Media de registros por isla:")
+usuarios_por_isla = interacciones.groupby('aisle_id')['user_id'].nunique()
+print(usuarios_por_isla.describe())
