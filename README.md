@@ -7,4 +7,4 @@ Execution order:
 - dataframe_for_svd.py
 - subcluster_svd_training.py
 - mba_por_sublcuster.py
-- main.py
+- streamlit run main.py
