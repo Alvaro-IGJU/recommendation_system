@@ -8,11 +8,10 @@ clusters = pd.read_csv("data/usuarios_clusters.csv")
 orders = pd.read_csv("data/orders.csv")
 products = pd.read_csv("data/products.csv")
 order_products_prior = pd.read_csv("data/order_products__prior.csv")
+aisles = pd.read_csv("data/aisles.csv")  # <-- Para nombres de islas
 
 # Añadir nombres de productos
 datos_productos = order_products_prior.merge(products[['product_id', 'product_name']], on='product_id')
-
-# Añadir cluster y subcluster
 datos_orders = orders[['order_id', 'user_id']].merge(clusters, on='user_id')
 datos = datos_productos.merge(datos_orders, on='order_id')
 
@@ -35,15 +34,22 @@ def recomendar_usuario_completo(user_id, n=10):
     productos_comprados = productos_usuario['product_id'].unique()
 
     productos_usuario = productos_usuario.merge(products[['product_id', 'aisle_id']], on='product_id')
-    # islas_usuario = productos_usuario['aisle_id'].unique()
 
-    # scored_islas = [(aisle_id, algo.predict(user_id, aisle_id).est) for aisle_id in islas_usuario]
-    # ✅ Mejor:
     todos_los_aisles = interacciones['aisle_id'].unique()
     scored_islas = [(aisle_id, algo.predict(user_id, aisle_id).est) for aisle_id in todos_los_aisles]
     top_islas = sorted(scored_islas, key=lambda x: x[1], reverse=True)[:5]
     top_isla_ids = [a for a, _ in top_islas]
 
+    # 🏷️ Obtener nombres de las islas
+    orden = {a: i for i, a in enumerate(top_isla_ids)}
+    top_islas_nombres = (
+        aisles[aisles['aisle_id'].isin(top_isla_ids)]
+        .assign(order=lambda df: df['aisle_id'].map(orden))
+        .sort_values('order')['aisle']
+        .tolist()
+    )
+
+    # 🛒 Productos populares del subcluster en esas islas
     user_ids_cluster = clusters[(clusters['cluster'] == cluster) & (clusters['subcluster'] == subcluster)]['user_id']
     pedidos_cluster = orders[orders['user_id'].isin(user_ids_cluster)]
     compras_cluster = order_products_prior[order_products_prior['order_id'].isin(pedidos_cluster['order_id'])]
@@ -57,7 +63,11 @@ def recomendar_usuario_completo(user_id, n=10):
     recomendaciones_svd_df = productos_populares[~productos_populares['product_id'].isin(productos_comprados)].head(n)
     nombres_svd = set(recomendaciones_svd_df['product_name'])
 
-    # 📦 Reglas MBA por subcluster
+    # Añadir nombre de la isla
+    recomendaciones_svd_df = recomendaciones_svd_df.merge(aisles, on='aisle_id', how='left')
+    recomendaciones_svd_df = recomendaciones_svd_df[['product_name', 'aisle']]
+
+    # 📦 Reglas MBA
     mba_path = f"mba_rules/cluster{cluster}_sub{subcluster}_rules.csv"
     recomendaciones_mba = []
     if os.path.exists(mba_path):
@@ -71,7 +81,7 @@ def recomendar_usuario_completo(user_id, n=10):
         recomendaciones_mba = list(set(recomendaciones_mba) - nombres_svd)
         recomendaciones_mba = list(recomendaciones_mba)[:n]
 
-    # 📉 Fallback si MBA está vacío
+    # Fallback
     if not recomendaciones_mba:
         fallback_path = f"mba_fallbacks/populares_cluster{cluster}_sub{subcluster}.csv"
         if os.path.exists(fallback_path):
@@ -83,7 +93,7 @@ def recomendar_usuario_completo(user_id, n=10):
 
     return {
         "usuario": user_id,
-        "top_islas_svd": top_isla_ids,
-        "recomendaciones_svd": recomendaciones_svd_df[['product_name', 'aisle_id', 'n_compras']].to_dict(orient='records'),
+        "top_islas_svd": top_islas_nombres,
+        "recomendaciones_svd": recomendaciones_svd_df.to_dict(orient='records'),
         "recomendaciones_mba": recomendaciones_mba
     }
