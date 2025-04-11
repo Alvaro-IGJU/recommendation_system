@@ -23,6 +23,17 @@ interacciones = df.melt(
 interacciones['aisle_id'] = interacciones['aisle_id'].astype(int)
 interacciones['comprado'] = interacciones['comprado'].astype(int)
 
+# 🧹 Filtrar islas poco representativas (ruido)
+umbral_minimo = 50
+islas_validas = (
+    interacciones[interacciones['comprado'] == 1]['aisle_id']
+    .value_counts()
+    .loc[lambda x: x >= umbral_minimo].index
+)
+interacciones = interacciones[interacciones['aisle_id'].isin(islas_validas)]
+
+print(f"\n🧹 Se han conservado {len(islas_validas)} islas con al menos {umbral_minimo} usuarios.")
+
 # 💾 Guardar en CSV
 interacciones.to_csv("data/interacciones_usuario_isla.csv", index=False)
 print("✅ Archivo 'interacciones_usuario_isla.csv' guardado correctamente.")
@@ -47,8 +58,7 @@ conn.close()
 
 print("✅ Tabla 'interacciones_usuario_isla' creada e insertada en 'instacart.db'.")
 
-# 🔍 Revisión rápida de la tabla interacciones
-
+# 📊 Revisión rápida de la tabla interacciones
 print("\n📊 Distribución de la variable 'comprado':")
 print(interacciones['comprado'].value_counts())
 
