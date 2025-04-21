@@ -2,6 +2,5 @@
 *.db
 /venv
 /myenv
-*.pkl
 /__pycache__
 /modelos_subclusters
