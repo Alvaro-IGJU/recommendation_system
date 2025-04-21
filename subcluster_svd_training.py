@@ -5,7 +5,7 @@ from surprise import Dataset, Reader, SVD, dump, accuracy
 from surprise.model_selection import train_test_split
 from sklearn.metrics import precision_score, recall_score, f1_score
 
-# 📥 Conectar a la base de datos
+# Conectar a la base de datos
 conn = sqlite3.connect("instacart.db")
 
 # Crear carpeta para guardar el modelo general
@@ -15,7 +15,7 @@ os.makedirs(carpeta_modelo_general, exist_ok=True)
 # Crear archivo de métricas
 archivo_metricas = os.path.join(carpeta_modelo_general, "metricas_modelo_general.txt")
 with open(archivo_metricas, "w") as f:
-    f.write("📊 Métricas del modelo SVD general\n")
+    f.write("Métricas del modelo SVD general\n")
     f.write("=" * 50 + "\n\n")
 
 # Cargar datos de interacciones completas
@@ -43,9 +43,10 @@ predictions = algo.test(testset)
 rmse = accuracy.rmse(predictions, verbose=False)
 mae = accuracy.mae(predictions, verbose=False)
 
-# Calcular métricas binarias
-y_true = [int(pred.r_ui >= 0.5) for pred in predictions]
-y_pred = [int(pred.est >= 0.5) for pred in predictions]
+# Calcular métricas binarias con threshold más bajo
+threshold = 0.5
+y_true = [int(pred.r_ui >= threshold) for pred in predictions]
+y_pred = [int(pred.est >= threshold) for pred in predictions]
 
 precision = precision_score(y_true, y_pred, zero_division=0)
 recall = recall_score(y_true, y_pred, zero_division=0)
@@ -65,6 +66,36 @@ with open(archivo_metricas, "a") as f:
     f.write(f" - F1-score  : {f1:.4f}\n")
     f.write("=" * 50 + "\n")
 
-conn.close()
+# Generar recomendaciones personalizadas para un usuario
+user_id = 12345  # Cambia por el ID del usuario deseado
 
-"✅ Modelo general entrenado y guardado con métricas."
+# Obtener todas las islas posibles
+all_aisles = interacciones['aisle_id'].unique()
+
+# Islas ya visitadas por el usuario
+aisles_visitadas = interacciones[interacciones['user_id'] == user_id]['aisle_id'].unique()
+
+# Islas no visitadas
+aisles_no_visitadas = [a for a in all_aisles if a not in aisles_visitadas]
+
+# Calcular frecuencia global de cada isla
+frecuencia = interacciones[interacciones['comprado'] == 1]['aisle_id'].value_counts(normalize=True).to_dict()
+
+# Predecir para cada isla no visitada y penalizar por popularidad
+predicciones = []
+for aisle_id in aisles_no_visitadas:
+    pred = algo.predict(user_id, aisle_id)
+    freq = frecuencia.get(aisle_id, 0)
+    pred.adjusted_score = pred.est * (1 - freq)  # penalización por frecuencia
+    predicciones.append(pred)
+
+# Ordenar por score ajustado
+top_N = 10
+top_predicciones = sorted(predicciones, key=lambda x: x.adjusted_score, reverse=True)[:top_N]
+
+# Mostrar recomendaciones
+print(f"\nRecomendaciones personalizadas para el usuario {user_id} (Top {top_N}):\n")
+for pred in top_predicciones:
+    print(f"Aisle {int(pred.iid)} → Estimación SVD: {pred.est:.4f} | Score ajustado: {pred.adjusted_score:.4f}")
+
+conn.close()

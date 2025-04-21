@@ -1,104 +1,132 @@
+# app.py
 import streamlit as st
 import pandas as pd
+import time
 from recomendar_usuario_clusterizado import recomendar_usuario_completo
+from nlp import buscar_productos_semanticos
 
-# Configuración general
-st.set_page_config(page_title="Recomendador Instacart", layout="wide")
+st.set_page_config(page_title="Instacart Recommender", layout="wide")
 st.markdown("""
     <style>
-        body {
-            background-color: #f7f9fc;
+        html, body, [class*="css"]  {
+            font-family: 'Helvetica Neue', sans-serif;
+            background-color: #ffffff;
         }
         .card {
-            border: 1px solid #d9d9d9;
-            padding: 1.2rem;
-            border-radius: 16px;
+            border-radius: 14px;
+            background-color: #f9f9f9;
+            padding: 1.5rem;
+            box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.04);
+            transition: all 0.25s ease;
+            border: 1px solid #eee;
             margin-bottom: 1.5rem;
-            background-color: #ffffff;
-            box-shadow: 0px 4px 12px rgba(0,0,0,0.06);
-            transition: transform 0.2s;
         }
         .card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0px 6px 20px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+            background-color: #ffffff;
         }
         .card h4 {
-            margin: 0 0 0.3rem 0;
             font-size: 1.1rem;
             color: #222;
+            margin-bottom: 0.3rem;
         }
         .card p {
-            margin: 0;
             font-size: 0.9rem;
-            color: #555;
+            color: #444;
+        }
+        .card small {
+            font-size: 0.75rem;
+            color: #888;
         }
         .section-title {
-            border-left: 4px solid #0e76a8;
-            padding-left: 10px;
-            margin-top: 2rem;
-            margin-bottom: 1rem;
             font-size: 1.3rem;
             font-weight: 600;
-            color: #0e76a8;
+            color: #222;
+            border-bottom: 2px solid #1e90ff;
+            margin: 2rem 0 1rem;
         }
-        .stButton>button {
-            background-color: #0e76a8;
+        .stButton > button {
+            background: linear-gradient(90deg, #1e90ff, #0077cc);
             color: white;
-            border-radius: 8px;
-            padding: 0.5rem 1.5rem;
             border: none;
+            border-radius: 6px;
+            padding: 0.5rem 1.2rem;
             font-size: 1rem;
+            transition: background 0.3s ease;
         }
-        .stButton>button:hover {
-            background-color: #0b5e87;
+        .stButton > button:hover {
+            background: linear-gradient(90deg, #0077cc, #005fa3);
         }
     </style>
 """, unsafe_allow_html=True)
 
-# Título principal
-st.title("🛍️ Sistema de recomendación Instacart")
-st.markdown("Introduce el ID de un usuario para recibir recomendaciones personalizadas basadas en sus preferencias de compra.")
+st.title("🛒 Instacart Recommender")
+st.markdown("Introduce el ID de un usuario para obtener recomendaciones personalizadas, o utiliza el buscador para explorar el catálogo.")
 
-# Input del usuario
-user_id = st.number_input("ID de usuario", min_value=1, step=1)
+# Inputs lado a lado
+col1, col2 = st.columns(2)
+with col1:
+    user_id = st.number_input("ID de usuario", min_value=1, step=1)
 
-# Botón de recomendación
-if st.button("🔎 Obtener recomendaciones"):
-    with st.spinner("🔄 Procesando recomendaciones..."):
-        resultado = recomendar_usuario_completo(user_id, n=10)
+with col2:
+    consulta = st.text_input("Buscar producto por descripción", key="consulta")
 
-    if "error" in resultado:
-        st.error(resultado["error"])
-    else:
-        st.success(f"🎉 Recomendaciones generadas para el usuario {resultado['usuario']}")
+# Control del debounce para búsqueda NLP
+if "last_input_time" not in st.session_state:
+    st.session_state.last_input_time = time.time()
+    st.session_state.last_text = ""
+    st.session_state.resultado_nlp = None
 
-        # Islas favoritas
-        st.markdown("<div class='section-title'>🏝️ Islas favoritas del usuario</div>", unsafe_allow_html=True)
-        st.markdown(" → ".join([f"`{isla}`" for isla in resultado["top_islas_svd"]]))
+current_time = time.time()
+if consulta != st.session_state.last_text:
+    st.session_state.last_input_time = current_time
+    st.session_state.last_text = consulta
 
-        # Recomendaciones SVD
-        st.markdown("<div class='section-title'>🛒 Productos sugeridos por SVD</div>", unsafe_allow_html=True)
-        svd_df = pd.DataFrame(resultado["recomendaciones_svd"])
+elif current_time - st.session_state.last_input_time >= 1 and consulta:
+    with st.spinner("Buscando productos similares..."):
+        st.session_state.resultado_nlp = buscar_productos_semanticos(consulta, top_n=10)
+
+# Resultado del recomendador de usuario
+resultado_usuario = None
+if st.button("Obtener recomendaciones"):
+    with st.spinner("Generando recomendaciones..."):
+        resultado_usuario = recomendar_usuario_completo(user_id, n=10)
+
+# Mostrar recomendaciones combinadas
+resultado_nlp = st.session_state.resultado_nlp
+if resultado_usuario or resultado_nlp is not None:
+    st.markdown("<div class='section-title'>Productos recomendados</div>", unsafe_allow_html=True)
+    all_recommendations = []
+
+    if resultado_usuario and "error" not in resultado_usuario:
+        svd_df = pd.DataFrame(resultado_usuario["recomendaciones_svd"])
+        mba_df = pd.DataFrame({"product_name": resultado_usuario["recomendaciones_mba"]})
+        svd_df["source"] = "SVD"
+        mba_df["source"] = "MBA"
+        mba_df["aisle"] = ""
+        all_recommendations.append(pd.concat([svd_df, mba_df], ignore_index=True))
+
+    if resultado_nlp is not None and not resultado_nlp.empty:
+        resultado_nlp = resultado_nlp.copy()
+        resultado_nlp["aisle"] = ""
+        resultado_nlp["source"] = "NLP"
+        resultado_nlp = resultado_nlp.rename(columns={"product_name": "product_name"})
+        all_recommendations.append(resultado_nlp)
+
+    if all_recommendations:
+        combined_df = pd.concat(all_recommendations, ignore_index=True)
         cols = st.columns(2)
-
-        for i, row in svd_df.iterrows():
+        for i, row in combined_df.iterrows():
             with cols[i % 2]:
                 st.markdown(f"""
                     <div class='card'>
                         <h4>{row['product_name']}</h4>
-                        <p>🧭 Categoría: <b>{row['aisle']}</b></p>
+                        <p>Categoría: <b>{row['aisle']}</b></p>
+                        <small>Fuente: {row['source']}</small>
                     </div>
                 """, unsafe_allow_html=True)
+    else:
+        st.warning("No se encontraron recomendaciones.")
 
-        # Recomendaciones MBA
-        st.markdown("<div class='section-title'>💡 También te podría interesar</div>", unsafe_allow_html=True)
-        mba_cols = st.columns(2)
-
-        for i, prod in enumerate(resultado["recomendaciones_mba"]):
-            with mba_cols[i % 2]:
-                st.markdown(f"""
-                    <div class='card'>
-                        <h4>{prod}</h4>
-                        <p>📦 Recomendado por patrones de compra</p>
-                    </div>
-                """, unsafe_allow_html=True)
+if resultado_usuario and "error" in resultado_usuario:
+    st.error(resultado_usuario["error"])
