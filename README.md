@@ -6,5 +6,5 @@ Execution order:
 - main.ipynb
 - dataframe_for_svd.py
 - subcluster_svd_training.py
-- mba_por_sublcuster.py
+- mba_por_subcluster.py
 - streamlit run main.py
