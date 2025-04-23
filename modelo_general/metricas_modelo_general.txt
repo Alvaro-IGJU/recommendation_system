@@ -1,10 +1,10 @@
 📊 Métricas del modelo SVD general
 ==================================================
 
- - N interacciones: 27632006
- - RMSE      : 0.3454
- - MAE       : 0.2495
- - Precision : 0.7200
- - Recall    : 0.3302
- - F1-score  : 0.4527
+- N.º de interacciones: 27632006
+- RMSE      : 0.3454
+- MAE       : 0.2494
+- Precision : 0.7198
+- Recall    : 0.3313
+- F1‑score  : 0.4538
 ==================================================
