@@ -1,99 +1,54 @@
+# recomendar_usuario_completo_usuario_producto.py
 import pandas as pd
 import os
 from surprise import dump
 
-# 📂 Cargar datos necesarios
-interacciones = pd.read_csv("data/interacciones_usuario_isla.csv")
-clusters = pd.read_csv("data/usuarios_clusters.csv")
-orders = pd.read_csv("data/orders.csv")
-products = pd.read_csv("data/products.csv")
-order_products_prior = pd.read_csv("data/order_products__prior.csv")
-aisles = pd.read_csv("data/aisles.csv")  # <-- Para nombres de islas
+# Cargar las interacciones limpias
+interacciones = pd.read_csv("data/interacciones_usuario_producto_limpio.csv")
+productos = pd.read_csv("data/products.csv")
 
-# Añadir nombres de productos
-datos_productos = order_products_prior.merge(products[['product_id', 'product_name']], on='product_id')
-datos_orders = orders[['order_id', 'user_id']].merge(clusters, on='user_id')
-datos = datos_productos.merge(datos_orders, on='order_id')
+# Cargar el modelo SVD entrenado
+modelo_path = "modelo_usuario_producto/modelo_svd_usuario_producto.pkl"
+_, algo = dump.load(modelo_path)
 
-def recomendar_usuario_completo(user_id, n=10):
-    fila = clusters[clusters['user_id'] == user_id]
-    if fila.empty:
-        return {"error": "Usuario no encontrado en los clusters."}
+def recomendar_usuario_completo_usuario_producto(user_id, n=10):
+    # Productos ya comprados por el usuario
+    productos_comprados = interacciones[interacciones['user_id'] == user_id]['product_id'].unique()
+
+    # Todos los productos posibles
+    todos_los_productos = productos['product_id'].unique()
     
-    cluster, subcluster = fila[['cluster', 'subcluster']].values[0]
-    print(f"Este usuario pertenece al cluster {cluster} y al subcluster {subcluster}")
+    # Productos que NO ha comprado
+    productos_no_comprados = [p for p in todos_los_productos if p not in productos_comprados]
     
-    modelo_path = "modelo_general/modelo_svd_general.pkl"
-    if not os.path.exists(modelo_path):
-        return {"error": f"Modelo general no encontrado: {modelo_path}"}
+    if not productos_no_comprados:
+        return {"error": "El usuario ya ha comprado todos los productos."}
     
-    _, algo = dump.load(modelo_path)
+    # Calcular popularidad global de los productos (frecuencia de compra)
+    frecuencia = interacciones['product_id'].value_counts(normalize=True).to_dict()
 
-    pedidos_usuario = orders[orders['user_id'] == user_id]['order_id']
-    productos_usuario = order_products_prior[order_products_prior['order_id'].isin(pedidos_usuario)]
-    productos_comprados = productos_usuario['product_id'].unique()
-
-    productos_usuario = productos_usuario.merge(products[['product_id', 'aisle_id']], on='product_id')
-
-    todos_los_aisles = interacciones['aisle_id'].unique()
-    scored_islas = [(aisle_id, algo.predict(user_id, aisle_id).est) for aisle_id in todos_los_aisles]
-    top_islas = sorted(scored_islas, key=lambda x: x[1], reverse=True)[:5]
-    top_isla_ids = [a for a, _ in top_islas]
-
-    # 🏷️ Obtener nombres de las islas
-    orden = {a: i for i, a in enumerate(top_isla_ids)}
-    top_islas_nombres = (
-        aisles[aisles['aisle_id'].isin(top_isla_ids)]
-        .assign(order=lambda df: df['aisle_id'].map(orden))
-        .sort_values('order')['aisle']
-        .tolist()
-    )
-
-    # 🛒 Productos populares del subcluster en esas islas
-    user_ids_cluster = clusters[(clusters['cluster'] == cluster) & (clusters['subcluster'] == subcluster)]['user_id']
-    pedidos_cluster = orders[orders['user_id'].isin(user_ids_cluster)]
-    compras_cluster = order_products_prior[order_products_prior['order_id'].isin(pedidos_cluster['order_id'])]
-    compras_cluster = compras_cluster.merge(products[['product_id', 'aisle_id', 'product_name']], on='product_id')
-    compras_filtradas = compras_cluster[compras_cluster['aisle_id'].isin(top_isla_ids)]
-
-    productos_populares = compras_filtradas.groupby(['product_id', 'product_name', 'aisle_id']) \
-        .size().reset_index(name='n_compras') \
-        .sort_values(by='n_compras', ascending=False)
-
-    recomendaciones_svd_df = productos_populares[~productos_populares['product_id'].isin(productos_comprados)].head(n)
-    nombres_svd = set(recomendaciones_svd_df['product_name'])
-
-    # Añadir nombre de la isla
-    recomendaciones_svd_df = recomendaciones_svd_df.merge(aisles, on='aisle_id', how='left')
-    recomendaciones_svd_df = recomendaciones_svd_df[['product_name', 'aisle']]
-
-    # 📦 Reglas MBA
-    mba_path = f"mba_rules/cluster{cluster}_sub{subcluster}_rules.csv"
-    recomendaciones_mba = []
-    if os.path.exists(mba_path):
-        reglas_mba = pd.read_csv(mba_path)
-        productos_comprados_nombres = products[products['product_id'].isin(productos_comprados)]['product_name'].tolist()
-        for _, regla in reglas_mba.iterrows():
-            antecedente = eval(regla['antecedents'])
-            consecuente = eval(regla['consequents'])
-            if any(p in productos_comprados_nombres for p in antecedente):
-                recomendaciones_mba.extend([p for p in consecuente if p not in productos_comprados_nombres])
-        recomendaciones_mba = list(set(recomendaciones_mba) - nombres_svd)
-        recomendaciones_mba = list(recomendaciones_mba)[:n]
-
-    # Fallback
-    if not recomendaciones_mba:
-        fallback_path = f"mba_fallbacks/populares_cluster{cluster}_sub{subcluster}.csv"
-        if os.path.exists(fallback_path):
-            fallback_df = pd.read_csv(fallback_path)
-            recomendaciones_mba = fallback_df[
-                (~fallback_df['product_name'].isin(productos_comprados)) &
-                (~fallback_df['product_name'].isin(nombres_svd))
-            ]['product_name'].head(n).tolist()
-
+    # Predecir las puntuaciones para los productos no comprados
+    predicciones = []
+    for product_id in productos_no_comprados:
+        pred = algo.predict(user_id, product_id)
+        freq = frecuencia.get(product_id, 0)
+        pred.adjusted_score = pred.est * (1 - freq)  # Penalización por popularidad
+        predicciones.append(pred)
+    
+    # Ordenar las predicciones por score ajustado y quedarnos con las top N
+    top_predicciones = sorted(predicciones, key=lambda x: x.adjusted_score, reverse=True)[:n]
+    
+    # Preparar la respuesta con nombres de los productos
+    recomendaciones = []
+    for pred in top_predicciones:
+        nombre_producto = productos[productos['product_id'] == pred.iid]['product_name'].values[0]
+        recomendaciones.append({
+            'product_name': nombre_producto,
+            'estimacion': pred.est,
+            'ajustado': pred.adjusted_score
+        })
+    
     return {
         "usuario": user_id,
-        "top_islas_svd": top_islas_nombres,
-        "recomendaciones_svd": recomendaciones_svd_df.to_dict(orient='records'),
-        "recomendaciones_mba": recomendaciones_mba
+        "recomendaciones_svd": recomendaciones
     }

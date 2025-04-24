@@ -1,0 +1,9 @@
+📊 Métricas del modelo SVD usuario-producto
+==================================================
+ - N interacciones totales: 26612690
+ - RMSE      : 0.3251
+ - MAE       : 0.2246
+ - Precision : 0.8541
+ - Recall    : 0.8582
+ - F1-score  : 0.8561
+==================================================
