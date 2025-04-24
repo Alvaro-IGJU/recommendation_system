@@ -1,4 +1,3 @@
-# app_usuario_producto.py
 import streamlit as st
 import pandas as pd
 import time
@@ -63,14 +62,13 @@ st.markdown("""
 st.title("🛒 Instacart Recommender (Usuario-Producto)")
 st.markdown("Introduce el ID de un usuario para obtener recomendaciones personalizadas, o utiliza el buscador para explorar el catálogo.")
 
-# Inputs
 col1, col2 = st.columns(2)
 with col1:
     user_id = st.number_input("ID de usuario", min_value=1, step=1)
 with col2:
     consulta = st.text_input("Buscar producto por descripción", key="consulta")
 
-# Control del debounce para búsqueda NLP
+# Control debounce búsqueda NLP
 if "last_input_time" not in st.session_state:
     st.session_state.last_input_time = time.time()
     st.session_state.last_text = ""
@@ -85,30 +83,39 @@ elif current_time - st.session_state.last_input_time >= 1 and consulta:
     with st.spinner("Buscando productos similares..."):
         st.session_state.resultado_nlp = buscar_productos_semanticos(consulta, top_n=10)
 
-# Resultado del recomendador
+# Recomendaciones del sistema
 resultado_usuario = None
 if st.button("Obtener recomendaciones"):
     with st.spinner("Generando recomendaciones..."):
         resultado_usuario = recomendar_usuario_completo_usuario_producto(user_id, n=10)
 
-# Mostrar recomendaciones combinadas
 resultado_nlp = st.session_state.resultado_nlp
 if resultado_usuario or resultado_nlp is not None:
     st.markdown("<div class='section-title'>Productos recomendados</div>", unsafe_allow_html=True)
     all_recommendations = []
 
     if resultado_usuario and "error" not in resultado_usuario:
+        # ✅ SVD
         svd_df = pd.DataFrame(resultado_usuario["recomendaciones_svd"])
         svd_df["source"] = "SVD"
         all_recommendations.append(svd_df)
 
+        # ✅ MBA (ahora bien construido como DataFrame aunque sea solo nombres)
+        mba_list = resultado_usuario.get("recomendaciones_mba", [])
+        if mba_list:
+            mba_df = pd.DataFrame({"product_name": mba_list})
+            mba_df["source"] = "MBA"
+            mba_df["aisle"] = ""
+            all_recommendations.append(mba_df)
+
+    # ✅ NLP
     if resultado_nlp is not None and not resultado_nlp.empty:
         resultado_nlp = resultado_nlp.copy()
         resultado_nlp["aisle"] = ""
         resultado_nlp["source"] = "NLP"
-        resultado_nlp = resultado_nlp.rename(columns={"product_name": "product_name"})
         all_recommendations.append(resultado_nlp)
 
+    # Mostrar recomendaciones
     if all_recommendations:
         combined_df = pd.concat(all_recommendations, ignore_index=True)
         cols = st.columns(2)
