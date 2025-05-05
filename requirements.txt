@@ -1,6 +1,7 @@
 altair==5.5.0
 asttokens==3.0.0
 attrs==25.3.0
+beautifulsoup4==4.13.4
 blinker==1.9.0
 cachetools==5.5.2
 certifi==2025.1.31
@@ -15,6 +16,7 @@ executing==2.2.0
 filelock==3.18.0
 fonttools==4.56.0
 fsspec==2025.3.2
+gdown==5.2.0
 gitdb==4.0.12
 GitPython==3.1.44
 huggingface-hub==0.30.2
@@ -67,6 +69,7 @@ pyarrow==19.0.1
 pydeck==0.9.1
 Pygments==2.19.1
 pyparsing==3.2.3
+PySocks==1.7.1
 python-dateutil==2.9.0.post0
 pytz==2025.2
 PyYAML==6.0.2
@@ -83,6 +86,7 @@ seaborn==0.13.2
 sentence-transformers==4.1.0
 six==1.17.0
 smmap==5.0.2
+soupsieve==2.7
 stack-data==0.6.3
 streamlit==1.44.1
 surprise==0.1
