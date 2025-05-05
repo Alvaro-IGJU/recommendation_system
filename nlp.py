@@ -1,16 +1,13 @@
 # buscador_semantico.py
 from sentence_transformers import SentenceTransformer, util
 import pandas as pd
-import sqlite3
 import torch
 
 # Cargar modelo multilingüe
 model = SentenceTransformer('distiluse-base-multilingual-cased-v2')
 
-# Cargar productos desde la base de datos
-conn = sqlite3.connect("instacart.db")
-products = pd.read_sql("SELECT product_id, product_name FROM products", conn)
-conn.close()
+# Cargar productos desde un archivo CSV
+products = pd.read_csv("data/products.csv")[['product_id', 'product_name']]
 products['product_name'] = products['product_name'].str.lower()
 
 # Generar embeddings semánticos para los nombres

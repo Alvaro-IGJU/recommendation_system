@@ -1,5 +1,4 @@
 import pandas as pd
-import sqlite3
 from surprise import dump
 import os
 import gdown
@@ -32,10 +31,8 @@ def cargar_modelo():
 @st.cache_data
 def cargar_datos():
     interacciones = pd.read_csv("data/interacciones_usuario_producto_limpio.csv")
-    conn = sqlite3.connect("instacart.db")
-    productos = pd.read_sql("SELECT product_id, product_name FROM products", conn)
+    productos = pd.read_csv("data/products.csv")[['product_id', 'product_name']]
     clusters = pd.read_csv("data/usuarios_clusters.csv")
-    conn.close()
     return interacciones, productos, clusters
 
 def parse_frozenset_string(fz_string):
