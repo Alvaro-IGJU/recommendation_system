@@ -15,7 +15,7 @@ def descargar_modelo_si_no_existe():
         url = "https://drive.google.com/uc?id=1pwdepBBNQLVA1300gAvtmB0vwjcc9ZY3"
         gdown.download(url, modelo_path, quiet=False)
 
-descargar_modelo_si_no_existe()
+# descargar_modelo_si_no_existe()
 
 # ================================
 # 📂 Cargar modelo y datos
