@@ -5,27 +5,6 @@ import gdown
 import streamlit as st
 
 # ================================
-# 📥 Descargar modelo si no existe
-# ================================
-def descargar_modelo_si_no_existe():
-    modelo_path = "modelo_usuario_producto/modelo_svd_usuario_producto.bin"
-    if not os.path.exists(modelo_path):
-        print("📦 Descargando modelo desde Google Drive...")
-        os.makedirs(os.path.dirname(modelo_path), exist_ok=True)
-        url = "https://drive.google.com/uc?id=1pwdepBBNQLVA1300gAvtmB0vwjcc9ZY3"
-        gdown.download(url, modelo_path, quiet=False)
-
-# ================================
-# 📂 Cargar modelo con caché segura
-# ================================
-@st.cache_resource
-def cargar_modelo():
-    descargar_modelo_si_no_existe()
-    modelo_path = "modelo_usuario_producto/modelo_svd_usuario_producto.bin"
-    _, modelo = dump.load(modelo_path)
-    return modelo
-
-# ================================
 # 🛠️ Funciones auxiliares
 # ================================
 @st.cache_data
@@ -39,11 +18,22 @@ def parse_frozenset_string(fz_string):
     clean = fz_string.replace("frozenset({", "").replace("})", "").replace("'", "")
     return [item.strip() for item in clean.split(",") if item.strip()]
 
+def cargar_modelo_local():
+    modelo_path = "modelo_usuario_producto/modelo_svd_usuario_producto.pkl"
+    if not os.path.exists(modelo_path):
+        with st.spinner("📦 Descargando modelo desde Google Drive..."):
+            os.makedirs(os.path.dirname(modelo_path), exist_ok=True)
+            url = "https://drive.google.com/uc?id=1pwdepBBNQLVA1300gAvtmB0vwjcc9ZY3"
+            gdown.download(url, modelo_path, quiet=False)
+    _, modelo = dump.load(modelo_path)
+    return modelo
+
 # ================================
 # 🔁 Recomendador principal
 # ================================
 def recomendar_usuario_completo_usuario_producto(user_id, n=10):
-    algo = cargar_modelo()
+    # ⚠️ El modelo solo se carga al ejecutar esta función
+    algo = cargar_modelo_local()
     interacciones, productos, clusters = cargar_datos()
 
     productos_comprados = interacciones[interacciones['user_id'] == user_id]['product_id'].unique()
