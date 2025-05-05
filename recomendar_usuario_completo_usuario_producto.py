@@ -8,7 +8,7 @@ import streamlit as st
 # 📥 Descargar modelo si no existe
 # ================================
 def descargar_modelo_si_no_existe():
-    modelo_path = "modelo_usuario_producto/modelo_svd_usuario_producto.pkl"
+    modelo_path = "modelo_usuario_producto/modelo_svd_usuario_producto.bin"
     if not os.path.exists(modelo_path):
         print("📦 Descargando modelo desde Google Drive...")
         os.makedirs(os.path.dirname(modelo_path), exist_ok=True)
@@ -21,7 +21,7 @@ def descargar_modelo_si_no_existe():
 @st.cache_resource
 def cargar_modelo():
     descargar_modelo_si_no_existe()
-    modelo_path = "modelo_usuario_producto/modelo_svd_usuario_producto.pkl"
+    modelo_path = "modelo_usuario_producto/modelo_svd_usuario_producto.bin"
     _, modelo = dump.load(modelo_path)
     return modelo
 
