@@ -3,6 +3,7 @@ import sqlite3
 from surprise import dump
 import os
 import gdown
+import streamlit as st
 
 # ================================
 # 📥 Descargar modelo si no existe
@@ -15,23 +16,28 @@ def descargar_modelo_si_no_existe():
         url = "https://drive.google.com/uc?id=1pwdepBBNQLVA1300gAvtmB0vwjcc9ZY3"
         gdown.download(url, modelo_path, quiet=False)
 
-descargar_modelo_si_no_existe()
-
 # ================================
-# 📂 Cargar modelo y datos
+# 📂 Cargar modelo con caché segura
 # ================================
-modelo_path = "modelo_usuario_producto/modelo_svd_usuario_producto.pkl"
-_, algo = dump.load(modelo_path)
-
-interacciones = pd.read_csv("data/interacciones_usuario_producto_limpio.csv")
-conn = sqlite3.connect("instacart.db")
-productos = pd.read_sql("SELECT product_id, product_name FROM products", conn)
-clusters = pd.read_csv("data/usuarios_clusters.csv")
-conn.close()
+@st.cache_resource
+def cargar_modelo():
+    descargar_modelo_si_no_existe()
+    modelo_path = "modelo_usuario_producto/modelo_svd_usuario_producto.pkl"
+    _, modelo = dump.load(modelo_path)
+    return modelo
 
 # ================================
 # 🛠️ Funciones auxiliares
 # ================================
+@st.cache_data
+def cargar_datos():
+    interacciones = pd.read_csv("data/interacciones_usuario_producto_limpio.csv")
+    conn = sqlite3.connect("instacart.db")
+    productos = pd.read_sql("SELECT product_id, product_name FROM products", conn)
+    clusters = pd.read_csv("data/usuarios_clusters.csv")
+    conn.close()
+    return interacciones, productos, clusters
+
 def parse_frozenset_string(fz_string):
     clean = fz_string.replace("frozenset({", "").replace("})", "").replace("'", "")
     return [item.strip() for item in clean.split(",") if item.strip()]
@@ -40,6 +46,9 @@ def parse_frozenset_string(fz_string):
 # 🔁 Recomendador principal
 # ================================
 def recomendar_usuario_completo_usuario_producto(user_id, n=10):
+    algo = cargar_modelo()
+    interacciones, productos, clusters = cargar_datos()
+
     productos_comprados = interacciones[interacciones['user_id'] == user_id]['product_id'].unique()
     productos_no_comprados = [pid for pid in productos['product_id'].unique() if pid not in productos_comprados]
 
