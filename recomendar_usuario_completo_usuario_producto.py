@@ -8,20 +8,20 @@ import gdown
 # 📥 Descargar modelo si no existe
 # ================================
 def descargar_modelo_si_no_existe():
-    # modelo_path = "modelo_usuario_producto/modelo_svd_usuario_producto.pkl"
-    # if not os.path.exists(modelo_path):
-    #     print("📦 Descargando modelo desde Google Drive...")
-    #     os.makedirs(os.path.dirname(modelo_path), exist_ok=True)
-    #     url = "https://drive.google.com/uc?id=1pwdepBBNQLVA1300gAvtmB0vwjcc9ZY3"
-    #     gdown.download(url, modelo_path, quiet=False)
+    modelo_path = "modelo_usuario_producto/modelo_svd_usuario_producto.pkl"
+    if not os.path.exists(modelo_path):
+        print("📦 Descargando modelo desde Google Drive...")
+        os.makedirs(os.path.dirname(modelo_path), exist_ok=True)
+        url = "https://drive.google.com/uc?id=1pwdepBBNQLVA1300gAvtmB0vwjcc9ZY3"
+        gdown.download(url, modelo_path, quiet=False)
 
-# descargar_modelo_si_no_existe()
+descargar_modelo_si_no_existe()
 
 # ================================
 # 📂 Cargar modelo y datos
 # ================================
-# modelo_path = "modelo_usuario_producto/modelo_svd_usuario_producto.pkl"
-# _, algo = dump.load(modelo_path)
+modelo_path = "modelo_usuario_producto/modelo_svd_usuario_producto.pkl"
+_, algo = dump.load(modelo_path)
 
 interacciones = pd.read_csv("data/interacciones_usuario_producto_limpio.csv")
 conn = sqlite3.connect("instacart.db")
