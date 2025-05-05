@@ -1,0 +1,4 @@
+cluster0: Precision=0.1707, Recall=1.0000, F1=0.2916
+cluster1: Precision=0.3002, Recall=1.0000, F1=0.4618
+cluster2: Precision=0.1881, Recall=1.0000, F1=0.3167
+cluster3: Precision=0.2240, Recall=1.0000, F1=0.3660
