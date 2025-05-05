@@ -21,7 +21,7 @@ descargar_modelo_si_no_existe()
 # 📂 Cargar modelo y datos
 # ================================
 modelo_path = "modelo_usuario_producto/modelo_svd_usuario_producto.pkl"
-_, algo = dump.load(modelo_path)
+# _, algo = dump.load(modelo_path)
 
 interacciones = pd.read_csv("data/interacciones_usuario_producto_limpio.csv")
 conn = sqlite3.connect("instacart.db")
