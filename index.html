@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Recomendador Carrefy</title>
+  <link rel="icon" type="image/png" href="logo.png" />
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #ecf9f6;
+      margin: 0;
+      padding: 2rem;
+      color: #2c3e50;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .logo-carrefy {
+      max-width: 140px;
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      opacity: 0.95;
+      margin-bottom: 0.5rem;
+    }
+
+    .logo-carrefy:hover {
+      transform: scale(1.02);
+      opacity: 1;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      color: #16a085;
+      margin: 0;
+    }
+
+    p {
+      font-size: 1rem;
+      color: #2c3e50;
+    }
+
+    .contenedor {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .form-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      justify-content: center;
+      margin-bottom: 3rem;
+    }
+
+    .formulario {
+      flex: 1 1 350px;
+      background-color: #ffffff;
+      padding: 2.5rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      border: 1px solid #d1f2eb;
+    }
+
+    .formulario h2 {
+      margin-top: 0;
+      color: #e67e22;
+    }
+
+    input[type="number"], input[type="text"] {
+      padding: 0.7rem;
+      width: 100%;
+      font-size: 1rem;
+      border: 2px solid #1abc9c;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      background-color: #f7fdfd;
+    }
+
+    button {
+      padding: 0.7rem 1.5rem;
+      font-size: 1rem;
+      background-color: #e67e22;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #d35400;
+    }
+
+    .loading {
+      display: none;
+      font-size: 0.9rem;
+      color: #888;
+      margin-top: 0.5rem;
+    }
+
+    .resultados {
+      margin-top: 2rem;
+    }
+
+    .seccion {
+      margin-bottom: 3rem;
+    }
+
+    .seccion h2 {
+      color: #27ae60;
+      font-size: 1.4rem;
+      margin-bottom: 1rem;
+      border-bottom: 2px solid #27ae60;
+      padding-bottom: 0.3rem;
+    }
+
+    .recomendaciones-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      gap: 1.5rem;
+    }
+
+    .recomendacion {
+      background-color: #ffffff;
+      border-radius: 12px;
+      padding: 1rem;
+      width: 220px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      text-align: center;
+      font-weight: 500;
+      border: 1px solid #d1f2eb;
+      transition: transform 0.2s ease;
+    }
+
+    .recomendacion:hover {
+      transform: scale(1.03);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    }
+
+    .recomendacion-title {
+      font-size: 1.1rem;
+      color: #2c3e50;
+      margin-bottom: 0.5rem;
+    }
+
+    footer {
+      margin-top: 3rem;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="logo.png" alt="Logo Carrefy" class="logo-carrefy" />
+    <h1>Recomendador Carrefy</h1>
+    <p>Explora productos recomendados o realiza búsquedas inteligentes por descripción.</p>
+  </header>
+
+  <div class="contenedor">
+    <div class="form-grid">
+      <div class="formulario">
+        <h2>👤 Recomendaciones por ID</h2>
+        <input type="number" id="userId" placeholder="ID de usuario" />
+        <button onclick="obtenerRecomendaciones()">Recomendar</button>
+        <div class="loading" id="loading_rec">Cargando recomendaciones...</div>
+      </div>
+
+      <div class="formulario">
+        <h2>🔍 Búsqueda semántica</h2>
+        <input type="text" id="consulta" placeholder="Ej. leche sin lactosa" />
+        <button onclick="buscarProductos()">Buscar</button>
+        <div class="loading" id="loading_busqueda">Buscando productos...</div>
+      </div>
+    </div>
+
+    <div class="resultados" id="resultado" style="display: none;">
+      <div class="seccion">
+        <h2>🎯 Productos recomendados para ti</h2>
+        <div id="recs_svd" class="recomendaciones-grid"></div>
+      </div>
+      <div class="seccion" id="seccion_mba" style="display: none;">
+        <h2>🧾 Según tus compras anteriores</h2>
+        <div id="recs_mba" class="recomendaciones-grid"></div>
+      </div>
+    </div>
+
+    <div class="seccion" id="seccion_busqueda" style="display: none;">
+      <h2>🔎 Resultados de búsqueda</h2>
+      <div id="recs_nlp" class="recomendaciones-grid"></div>
+    </div>
+  </div>
+
+  <footer>
+    © 2025 Carrefy. Todos los derechos reservados.
+  </footer>
+
+  <script>
+    const API_BASE = "https://ef84-83-51-13-17.ngrok-free.app";
+  
+    async function obtenerRecomendaciones() {
+      const userId = document.getElementById('userId').value;
+      const recsSvd = document.getElementById('recs_svd');
+      const recsMba = document.getElementById('recs_mba');
+      const resultado = document.getElementById('resultado');
+      const seccionMba = document.getElementById('seccion_mba');
+      const seccionBusqueda = document.getElementById('seccion_busqueda');
+      const loading = document.getElementById('loading_rec');
+  
+      seccionBusqueda.style.display = 'none';
+      recsSvd.innerHTML = '';
+      recsMba.innerHTML = '';
+      resultado.style.display = 'none';
+      seccionMba.style.display = 'none';
+      loading.style.display = 'inline';
+  
+      if (!userId) {
+        alert("Por favor introduce un ID válido.");
+        loading.style.display = 'none';
+        return;
+      }
+  
+      try {
+        const response = await fetch(`${API_BASE}/recomendar/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_id: parseInt(userId), n: 10 })
+        });
+  
+        const data = await response.json();
+        data.recomendaciones_svd.forEach(r => {
+          const item = document.createElement("div");
+          item.className = "recomendacion";
+          item.innerHTML = `<div class="recomendacion-title">${r.product_name}</div>`;
+          recsSvd.appendChild(item);
+        });
+  
+        if (data.recomendaciones_mba.length > 0) {
+          data.recomendaciones_mba.forEach(r => {
+            const item = document.createElement("div");
+            item.className = "recomendacion";
+            item.innerHTML = `<div class="recomendacion-title">${r}</div>`;
+            recsMba.appendChild(item);
+          });
+          seccionMba.style.display = 'block';
+        }
+  
+        resultado.style.display = 'block';
+      } catch (err) {
+        console.error("Error:", err);
+        alert("Error al conectar con la API.");
+      } finally {
+        loading.style.display = 'none';
+      }
+    }
+  
+    async function buscarProductos() {
+      const consulta = document.getElementById('consulta').value.trim();
+      const recsNlp = document.getElementById('recs_nlp');
+      const seccionBusqueda = document.getElementById('seccion_busqueda');
+      const resultado = document.getElementById('resultado');
+      const loading = document.getElementById('loading_busqueda');
+  
+      resultado.style.display = 'none';
+      recsNlp.innerHTML = '';
+      seccionBusqueda.style.display = 'none';
+      loading.style.display = 'inline';
+  
+      if (!consulta) {
+        alert("Introduce un término de búsqueda.");
+        loading.style.display = 'none';
+        return;
+      }
+  
+      try {
+        const response = await fetch(`${API_BASE}/buscar/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ consulta: consulta, top_n: 10 })
+        });
+  
+        const data = await response.json();
+        data.resultados.forEach(p => {
+          const item = document.createElement("div");
+          item.className = "recomendacion";
+          item.innerHTML = `<div class="recomendacion-title">${p.product_name}</div>`;
+          recsNlp.appendChild(item);
+        });
+  
+        seccionBusqueda.style.display = 'block';
+      } catch (err) {
+        console.error("Error:", err);
+        alert("Error al conectar con la API de búsqueda.");
+      } finally {
+        loading.style.display = 'none';
+      }
+    }
+  </script>
+</body>
+</html>
