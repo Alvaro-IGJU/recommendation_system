@@ -73,5 +73,5 @@ Si deseas entrenar los modelos desde cero, ejecuta los siguientes scripts en ord
 
 ## 📬 Contacto
 
-> Proyecto desarrollado por Alvaro Iglesias Jusmet  
+> Proyecto desarrollado por Alvaro Iglesias Jusmet y Abel Pérez
 > © 2025 · Todos los derechos reservados
