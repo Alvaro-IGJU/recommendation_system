@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Recomendador Carrefy</title>
-  <link rel="icon" type="image/png" href="logo.png" />
+  <link rel="icon" type="image/png" href="/static/logo.png" /> <!-- Favicon -->
+
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -159,7 +160,7 @@
 </head>
 <body>
   <header>
-    <img src="logo.png" alt="Logo Carrefy" class="logo-carrefy" />
+    <img src="/static/logo.png" alt="Logo Carrefy" class="logo-carrefy" />
     <h1>Recomendador Carrefy</h1>
     <p>Explora productos recomendados o realiza búsquedas inteligentes por descripción.</p>
   </header>
@@ -203,8 +204,8 @@
   </footer>
 
   <script>
-    const API_BASE = "https://ef84-83-51-13-17.ngrok-free.app";
-  
+    const API_BASE = "API_BASE_PLACEHOLDER";
+
     async function obtenerRecomendaciones() {
       const userId = document.getElementById('userId').value;
       const recsSvd = document.getElementById('recs_svd');
@@ -213,27 +214,27 @@
       const seccionMba = document.getElementById('seccion_mba');
       const seccionBusqueda = document.getElementById('seccion_busqueda');
       const loading = document.getElementById('loading_rec');
-  
+
       seccionBusqueda.style.display = 'none';
       recsSvd.innerHTML = '';
       recsMba.innerHTML = '';
       resultado.style.display = 'none';
       seccionMba.style.display = 'none';
       loading.style.display = 'inline';
-  
+
       if (!userId) {
         alert("Por favor introduce un ID válido.");
         loading.style.display = 'none';
         return;
       }
-  
+
       try {
         const response = await fetch(`${API_BASE}/recomendar/`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ user_id: parseInt(userId), n: 10 })
         });
-  
+
         const data = await response.json();
         data.recomendaciones_svd.forEach(r => {
           const item = document.createElement("div");
@@ -241,7 +242,7 @@
           item.innerHTML = `<div class="recomendacion-title">${r.product_name}</div>`;
           recsSvd.appendChild(item);
         });
-  
+
         if (data.recomendaciones_mba.length > 0) {
           data.recomendaciones_mba.forEach(r => {
             const item = document.createElement("div");
@@ -251,7 +252,7 @@
           });
           seccionMba.style.display = 'block';
         }
-  
+
         resultado.style.display = 'block';
       } catch (err) {
         console.error("Error:", err);
@@ -260,32 +261,32 @@
         loading.style.display = 'none';
       }
     }
-  
+
     async function buscarProductos() {
       const consulta = document.getElementById('consulta').value.trim();
       const recsNlp = document.getElementById('recs_nlp');
       const seccionBusqueda = document.getElementById('seccion_busqueda');
       const resultado = document.getElementById('resultado');
       const loading = document.getElementById('loading_busqueda');
-  
+
       resultado.style.display = 'none';
       recsNlp.innerHTML = '';
       seccionBusqueda.style.display = 'none';
       loading.style.display = 'inline';
-  
+
       if (!consulta) {
         alert("Introduce un término de búsqueda.");
         loading.style.display = 'none';
         return;
       }
-  
+
       try {
         const response = await fetch(`${API_BASE}/buscar/`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ consulta: consulta, top_n: 10 })
         });
-  
+
         const data = await response.json();
         data.resultados.forEach(p => {
           const item = document.createElement("div");
@@ -293,7 +294,7 @@
           item.innerHTML = `<div class="recomendacion-title">${p.product_name}</div>`;
           recsNlp.appendChild(item);
         });
-  
+
         seccionBusqueda.style.display = 'block';
       } catch (err) {
         console.error("Error:", err);
